@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/welcomeScreen.dart';
+import 'screens/feedScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +16,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Nohemi',
       ),
-      home: const WelcomeScreen(),
+      //home: const WelcomeScreen(),
+      home: const FeedScreen(),
     );
   }
 }
