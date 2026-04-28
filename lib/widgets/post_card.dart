@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   const PostCard({super.key});
+
+  @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool isLiked = false;
+  int sparkCount = 245;
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +77,22 @@ class PostCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                Text("Lire en entier",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      //fontFamily: "Roboto",
-                    )
-                )
+                /**Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    child: Text("Lire en entier",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          //fontFamily: "Roboto",
+                        )
+                    ),
+                  ),
+                )**/
               ]
 
             ),
@@ -94,6 +111,16 @@ class PostCard extends StatelessWidget {
                 )
                 ),
 
+
+                //Toggle Spark
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isLiked = !isLiked;
+                  isLiked ? sparkCount++ : sparkCount--;
+                });
+              },
+              child:
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 1),
@@ -103,9 +130,9 @@ class PostCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     child: Row(
                       children: [
-                        Image.asset('assets/images/es.png'),
+                        Image.asset(isLiked ? 'assets/images/ys.png' : 'assets/images/es.png'),
                         const SizedBox(width: 7),
-                        Text("24",
+                        Text("$sparkCount",
                             style: TextStyle(
                               fontSize: 15,
                               height: 1.2,
@@ -116,6 +143,7 @@ class PostCard extends StatelessWidget {
                     ),
                   ),
                 )
+            )
 
               ],
             ),
