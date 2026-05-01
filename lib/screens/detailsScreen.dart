@@ -90,28 +90,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        child: Row(
-                          children: [
-                            Icon(Icons.language, size: 16),
-                            const SizedBox(width: 10),
-                            Text("http://lemonde.fr",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                )
-                            ),
-                          ],
-                        ),
-                      ),
+                Text("Il y a 2h et 13min",
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.2,
+                      fontWeight: FontWeight.w200,
                     )
+                ),
+
+
+
 
 
                 /**Container(
@@ -140,15 +128,33 @@ class _DetailsScreenState extends State<DetailsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Il y a 2h et 13min",
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.2,
-                  fontWeight: FontWeight.w200,
-                )
+
+
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      child: Row(
+                        children: [
+                          Icon(Icons.language, size: 16),
+                          const SizedBox(width: 10),
+                          Text("http://lemonde.fr",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              )
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
 
-
+                const SizedBox(width: 10),
                 //Toggle Spark
             GestureDetector(
               onTap: () {
@@ -165,18 +171,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.asset(isLiked ? 'assets/images/ys.png' : 'assets/images/es.png'),
-                        const SizedBox(width: 7),
-                        Text("$sparkCount",
-                            style: TextStyle(
-                              fontSize: 15,
-                              height: 1.2,
-                              fontWeight: FontWeight.w700,
-                            )
-                        ),
 
+                        Row(
+                          children: [
+                            Image.asset(isLiked ? 'assets/images/ys.png' : 'assets/images/es.png'),
+                            const SizedBox(width: 7),
+                            Text("$sparkCount",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.2,
+                                  fontWeight: FontWeight.w700,
+                                )
+                            ),
+                          ],
+                        ),
 
                       ],
                     ),
