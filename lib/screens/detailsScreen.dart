@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav_bar.dart';
-
+import '../screens/userProfileScreen.dart';
+import '../models/post.dart';
 
 class DetailsScreen extends StatefulWidget {
-  const DetailsScreen({super.key});
+  final Post post;
+  const DetailsScreen({super.key, required this.post});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -11,11 +13,18 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   bool isLiked = false;
-  int sparkCount = 245;
+  late int sparkCount;
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    sparkCount = widget.post.sparks;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final post = widget.post;
     return Scaffold(
         backgroundColor: Color(0xFFF2EDE1),
         appBar: AppBar(
@@ -43,21 +52,34 @@ class _DetailsScreenState extends State<DetailsScreen> {
             padding: const EdgeInsets.only(bottom:10),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/pp.jpg'),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                  ),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/pp.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only(left:10),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      Text("Titre de la Nuz",  style: TextStyle(fontSize: 20, height: 1.0, fontWeight: FontWeight.w700, )),
-                      Text("@UserName",  style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300, )),
-
-                    ]
-
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left:10),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                        Text(post.titre,  style: TextStyle(fontSize: 20, height: 1.0, fontWeight: FontWeight.w700, )),
+                        Text("@${post.auteur}",  style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300, )),
+                      ]
+                    ),
                   ),
                 )
 
@@ -79,7 +101,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec dapibus, elit vitae vulputate dapibus, leo elit porta felis, et ultricies libero lectus ac nisi. Curabitur lectus quam, varius luctus risus a, malesuada faucibus purus. Suspendisse nunc elit, molestie vel posuere ut, luctus sed felis. Suspendisse commodo, ligula non placerat vestibulum, ante elit efficitur est, fermentum tempor risus augue a eros. In feugiat, ipsum eget sodales elementum, risus urna dapibus magna, a convallis turpis tortor id ipsum. Sed dapibus, ligula ac rhoncus rutrum, nisi metus dignissim diam, vitae tempor erat lorem at massa. Nulla facilisi. Fusce eget semper massa. Nulla ut arcu non dui malesuada dapibus sit amet ut mi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam gravida efficitur consequat.",
+                Text(post.contenu,
 
                     style: TextStyle(
                       fontSize: 14,
@@ -205,8 +227,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
               color: Colors.grey,
               thickness: 1,
             ),
-          )
+          ),
 
+          Center(
+              child: OutlinedButton(
+                  onPressed: () {
+
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red, width: 1),
+                  ),
+                  child: const Text('Signaler',style: TextStyle(
+                    fontSize: 12,
+                    height: 1.2,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.red,
+                  ))
+              )
+          )
 
 
         ],
@@ -215,10 +253,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ]),
       ),
     ),
-    bottomNavigationBar: AppBottomNavBar(
-      currentIndex: _currentIndex,
-      onTap: (index) => setState(() => _currentIndex = index),
-    ),
+
   );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gudbuz/theme/colors.dart';
+import 'package:gudnuz/theme/colors.dart';
 
 class InscriptionScreen extends StatelessWidget {
   const InscriptionScreen({super.key});
@@ -50,7 +50,7 @@ class InscriptionScreen extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
-                  // action au clic
+                  Navigator.pushReplacementNamed(context, '/main');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 7),

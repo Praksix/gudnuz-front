@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gudbuz/theme/colors.dart';
+import 'package:gudnuz/theme/colors.dart';
 
 class ConnexionScreen extends StatelessWidget {
   const ConnexionScreen({super.key});
@@ -47,7 +47,7 @@ class ConnexionScreen extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
-                  // action au clic
+                  Navigator.pushReplacementNamed(context, '/main');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 7),

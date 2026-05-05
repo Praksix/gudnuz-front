@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../screens/detailsScreen.dart';
+import '../screens/userProfileScreen.dart';
+import '../models/post.dart';
 
 class PostCard extends StatefulWidget {
-  const PostCard({super.key});
+  final Post post;
+  const PostCard({super.key, required this.post});
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -10,10 +13,17 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool isLiked = false;
-  int sparkCount = 245;
+  late int sparkCount;
+
+  @override
+  void initState() {
+    super.initState();
+    sparkCount = widget.post.sparks;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final post = widget.post;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
@@ -22,21 +32,42 @@ class _PostCardState extends State<PostCard> {
 
           // Header (avatar + titre) — non cliquable
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/pp.jpg'),
+
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                  ),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/pp.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Titre de la Nuz", style: TextStyle(fontSize: 20, height: 1.0, fontWeight: FontWeight.w700)),
-                      Text("@UserName", style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300)),
-                    ],
+
+
+
+
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(post.titre, style: TextStyle(fontSize: 16, height: 0.8, fontWeight: FontWeight.w800)),
+                        Text("@${post.auteur}", style: TextStyle(fontSize: 12, height: 1.7, fontWeight: FontWeight.w400)),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -47,7 +78,8 @@ class _PostCardState extends State<PostCard> {
           GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const DetailsScreen()),
+                MaterialPageRoute(builder: (_) => DetailsScreen(post: post))
+
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +100,7 @@ class _PostCardState extends State<PostCard> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec dapibus, elit vitae vulputate dapibus, leo elit porta felis, et ultricies libero lectus ac nisi. Curabitur lectus quam, varius luctus risus a, malesuada faucibus purus.",
+                    post.contenu,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
