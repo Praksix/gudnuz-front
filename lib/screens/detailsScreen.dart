@@ -16,10 +16,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
   late int sparkCount;
   int _currentIndex = 0;
 
+  final TextEditingController _motifController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     sparkCount = widget.post.sparks;
+  }
+
+@override
+  void dispose() {
+    _motifController.dispose();
+    super.dispose();
   }
 
   @override
@@ -28,7 +36,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return Scaffold(
         backgroundColor: Color(0xFFF2EDE1),
         appBar: AppBar(
-          title: const Text('Actus', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, )),
+          title: Text(post.categorie, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, )),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -232,7 +240,39 @@ class _DetailsScreenState extends State<DetailsScreen> {
           Center(
               child: OutlinedButton(
                   onPressed: () {
-
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: Color(0xFFF2EDE1),  // même fond que ton écran
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          title: Text('Signaler ce contenu'),
+                          content: TextField(
+                            controller: _motifController,
+                            maxLines: 4,
+                            decoration: InputDecoration(
+                              hintText: 'Décris le motif...',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Annuler', style: TextStyle(color: Colors.grey),),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                final motif = _motifController.text.trim();
+                                Navigator.pop(context);
+                              },
+                              child: Text('Envoyer', style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red, width: 1),

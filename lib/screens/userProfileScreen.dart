@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav_bar.dart';
 import '../models/post.dart';
@@ -115,6 +117,14 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     return _tousPosts.where((p) => p.auteur == _auteur).toList();
   }
 
+  String get _nuzCount => _postsFiltres.length.toString();
+
+  String get _sparksCount {
+    int total = _postsFiltres.fold(0, (somme, post) => somme + post.sparks);
+    return total.toString();
+  }
+
+
 
 
 
@@ -187,7 +197,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                    padding: const EdgeInsets.all(12),
                                    child: Column(
                                      children: [
-                                       Text("14", style: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w800, color: Colors.black)),
+                                       Text(_nuzCount, style: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w800, color: Colors.black)),
                                        Text("Nuz", style: TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.w600, color: Colors.black)),
                                      ],
                                    ),
@@ -198,8 +208,8 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                    padding: const EdgeInsets.all(12),
                                    child: Column(
                                      children: [
-                                       Text("4,2k", style: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w800, color: Colors.black)),
-                                       Text("SParks", style: TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.w600, color: Colors.black)),
+                                       Text(_sparksCount, style: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w800, color: Colors.black)),
+                                       Text("Sparks", style: TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.w600, color: Colors.black)),
                                      ],
                                    ),
                                  ),
