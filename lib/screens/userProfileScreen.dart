@@ -27,7 +27,6 @@ class _UserProfileScreen extends State<UserProfileScreen> {
   late Future<User> _userFuture;
   late Future<List<Post>> _postsFuture;
   List<Post> _posts = [];
-  final Set<String> _likedPostIds = {};
 
 
 
@@ -65,9 +64,10 @@ class _UserProfileScreen extends State<UserProfileScreen> {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      // response.data est une List de Maps
       final List<dynamic> data = response.data;
-      return data.map((json) => Post.fromJson(json)).toList();
+      final posts = data.map((json) => Post.fromJson(json)).toList();
+      setState(() => _posts = posts);
+      return posts;
 
     } on DioException catch (e) {
       throw Exception('Erreur réseau : ${e.message}');
@@ -79,11 +79,6 @@ class _UserProfileScreen extends State<UserProfileScreen> {
     setState(() {
       final index = _posts.indexWhere((p) => p.id == updatedPost.id);
       if (index != -1) _posts[index] = updatedPost;
-      if (updatedPost.isSparked) {
-        _likedPostIds.add(updatedPost.id);
-      } else {
-        _likedPostIds.remove(updatedPost.id);
-      }
     });
   }
 
@@ -293,20 +288,17 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                               return Center(child: Text('Erreur : ${snapshot.error}'));
                             }
 
-                            // État 3 : les données sont là
-                            final posts = snapshot.data!;
-
-                            if (posts.isEmpty) {
+                            if (_posts.isEmpty) {
                               return const Center(child: Text('Aucun post pour le moment.'));
                             }
 
                             return ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: posts.length,
+                                  itemCount: _posts.length,
                                   itemBuilder: (context, index) {
                                     return PostCard(
-                                      post: posts[index],
+                                      post: _posts[index],
                                       onSparkToggled: _onSparkToggled,
                                     );
                                   },

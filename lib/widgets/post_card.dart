@@ -32,10 +32,8 @@ class _PostCardState extends State<PostCard> {
   void didUpdateWidget(PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.post.id != widget.post.id) {
-      // Post différent — on repart de l'état serveur
       isLiked = widget.post.isSparked;
     }
-    // Toujours mettre à jour le compteur (info publique, toujours fiable)
     sparkCount = widget.post.sparksCount;
   }
 
@@ -125,11 +123,18 @@ class _PostCardState extends State<PostCard> {
           // Image + contenu + actions — cliquable vers DetailsScreen
           GestureDetector(
             onTap: () async {
+              final currentPost = widget.post.copyWith(isSparked: isLiked, sparksCount: sparkCount);
               final updatedPost = await Navigator.push<Post>(
                 context,
-                MaterialPageRoute(builder: (_) => DetailsScreen(post: post)),
+                MaterialPageRoute(builder: (_) => DetailsScreen(post: currentPost)),
               );
-              if (updatedPost != null) widget.onSparkToggled(updatedPost);
+              if (updatedPost != null) {
+                setState(() {
+                  isLiked = updatedPost.isSparked;
+                  sparkCount = updatedPost.sparksCount;
+                });
+                widget.onSparkToggled(updatedPost);
+              }
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
