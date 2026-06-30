@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import '../screens/detailsScreen.dart';
+import '../screens/userProfileScreen.dart';
+import '../models/post.dart';
+import 'package:dio/dio.dart';
+import '../services/auth_service.dart';
+import '../utils/date_utils.dart';
+
 
 class PostCard extends StatefulWidget {
-  const PostCard({super.key});
+  final Post post;
+  final Function(Post) onSparkToggled; // callback vers le parent
+
+  const PostCard({super.key, required this.post, required this.onSparkToggled});
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -10,10 +19,59 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool isLiked = false;
-  int sparkCount = 245;
+  late int sparkCount;
+
+  @override
+  void initState() {
+    super.initState();
+    sparkCount = widget.post.sparksCount;
+    isLiked = widget.post.isSparked;
+  }
+
+  @override
+  void didUpdateWidget(PostCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.id != widget.post.id) {
+      // Post différent — on repart de l'état serveur
+      isLiked = widget.post.isSparked;
+    }
+    // Toujours mettre à jour le compteur (info publique, toujours fiable)
+    sparkCount = widget.post.sparksCount;
+  }
+
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+
+  Future<void> toggleSpark() async {
+    setState(() {
+      isLiked = !isLiked;
+      isLiked ? sparkCount++ : sparkCount--;
+    });
+
+    try {
+      final token = await AuthService().getToken();
+
+      final response = await _dio.post(
+        '/posts/${widget.post.id}/spark',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      final newCount = response.data['sparksCount'] as int;
+      setState(() => sparkCount = newCount);
+      widget.onSparkToggled(
+        widget.post.copyWith(isSparked: isLiked, sparksCount: newCount),
+      );
+    } on DioException catch (e) {
+      print('SPARK ERROR: ${e.response?.statusCode} — ${e.message}');
+      setState(() {
+        isLiked = !isLiked;
+        isLiked ? sparkCount++ : sparkCount--;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    final post = widget.post;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
@@ -22,21 +80,42 @@ class _PostCardState extends State<PostCard> {
 
           // Header (avatar + titre) — non cliquable
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/pp.jpg'),
+
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UserProfileScreen()),
+                  ),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/pp.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Titre de la Nuz", style: TextStyle(fontSize: 20, height: 1.0, fontWeight: FontWeight.w700)),
-                      Text("@UserName", style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300)),
-                    ],
+
+
+
+
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(post.titre, style: TextStyle(fontSize: 16, height: 0.8, fontWeight: FontWeight.w800)),
+                        Text("@${post.pseudo}", style: TextStyle(fontSize: 12, height: 1.7, fontWeight: FontWeight.w400)),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -45,21 +124,23 @@ class _PostCardState extends State<PostCard> {
 
           // Image + contenu + actions — cliquable vers DetailsScreen
           GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const DetailsScreen()),
-            ),
+            onTap: () async {
+              final updatedPost = await Navigator.push<Post>(
+                context,
+                MaterialPageRoute(builder: (_) => DetailsScreen(post: post)),
+              );
+              if (updatedPost != null) widget.onSparkToggled(updatedPost);
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                SizedBox(
+                if (post.imageUrl != null)
+                  SizedBox(
                   height: 200,
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      'assets/images/party.jpg',
+                    child: Image.asset(post.imageUrl!,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -68,7 +149,7 @@ class _PostCardState extends State<PostCard> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec dapibus, elit vitae vulputate dapibus, leo elit porta felis, et ultricies libero lectus ac nisi. Curabitur lectus quam, varius luctus risus a, malesuada faucibus purus.",
+                    post.contenu,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -86,18 +167,13 @@ class _PostCardState extends State<PostCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Il y a 2h et 13min",
+                        formatTimeAgo(post.createdAt),
                         style: TextStyle(fontSize: 12, height: 1.2, fontWeight: FontWeight.w200),
                       ),
 
                       // Toggle Spark — son propre GestureDetector prend la priorité
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isLiked = !isLiked;
-                            isLiked ? sparkCount++ : sparkCount--;
-                          });
-                        },
+                        onTap: toggleSpark,
                         child: Container(
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.black, width: 1),

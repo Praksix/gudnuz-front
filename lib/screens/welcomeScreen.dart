@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gudbuz/theme/colors.dart';
+import 'package:gudnuz/theme/colors.dart';
 import 'connexionScreen.dart';
 import 'inscriptionScreen.dart';
 
