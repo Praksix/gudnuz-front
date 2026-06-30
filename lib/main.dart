@@ -4,24 +4,35 @@ import 'screens/welcomeScreen.dart';
 import 'screens/feedScreen.dart';
 import 'screens/userProfileScreen.dart';
 import 'screens/createScreen.dart';
+import 'screens/connexionScreen.dart';
+import 'screens/inscriptionScreen.dart';
+import 'package:gudnuz/services/auth_service.dart';
 
-void main() {
-  runApp(const MyApp());
+// "async" obligatoire car on utilise "await" dans main
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final isLoggedIn = await AuthService().isLoggedIn();
+
+  runApp(MyApp(initialRoute: isLoggedIn ? '/main' : '/welcome'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute; // reçoit la route de départ depuis main()
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Nohemi',
-      ),
-      home: const WelcomeScreen(),
+      theme: ThemeData(fontFamily: 'Nohemi'),
+      initialRoute: initialRoute, // utilise la valeur reçue
       routes: {
-        '/main': (context) => const MainScreen(),
+        '/welcome':    (context) => const WelcomeScreen(),
+        '/connexion':  (context) => const ConnexionScreen(),
+        '/inscription':(context) => const InscriptionScreen(),
+        '/main':       (context) => const MainScreen(),
       },
     );
   }
@@ -37,9 +48,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    FeedScreen(),
-    CreateScreen(),
+  final List<Widget> _screens = [
+    const FeedScreen(),
+    const CreateScreen(),
     UserProfileScreen(),
   ];
 

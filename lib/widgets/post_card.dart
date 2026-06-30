@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import '../screens/detailsScreen.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
+import 'package:dio/dio.dart';
+import '../services/auth_service.dart';
+import '../utils/date_utils.dart';
+
 
 class PostCard extends StatefulWidget {
   final Post post;
-  const PostCard({super.key, required this.post});
+  final Function(Post) onSparkToggled; // callback vers le parent
+
+  const PostCard({super.key, required this.post, required this.onSparkToggled});
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -18,8 +24,50 @@ class _PostCardState extends State<PostCard> {
   @override
   void initState() {
     super.initState();
-    sparkCount = widget.post.sparks;
+    sparkCount = widget.post.sparksCount;
+    isLiked = widget.post.isSparked;
   }
+
+  @override
+  void didUpdateWidget(PostCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.id != widget.post.id) {
+      // Post différent — on repart de l'état serveur
+      isLiked = widget.post.isSparked;
+    }
+    // Toujours mettre à jour le compteur (info publique, toujours fiable)
+    sparkCount = widget.post.sparksCount;
+  }
+
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+
+  Future<void> toggleSpark() async {
+    setState(() {
+      isLiked = !isLiked;
+      isLiked ? sparkCount++ : sparkCount--;
+    });
+
+    try {
+      final token = await AuthService().getToken();
+
+      final response = await _dio.post(
+        '/posts/${widget.post.id}/spark',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      final newCount = response.data['sparksCount'] as int;
+      setState(() => sparkCount = newCount);
+      widget.onSparkToggled(
+        widget.post.copyWith(isSparked: isLiked, sparksCount: newCount),
+      );
+    } on DioException catch (e) {
+      print('SPARK ERROR: ${e.response?.statusCode} — ${e.message}');
+      setState(() {
+        isLiked = !isLiked;
+        isLiked ? sparkCount++ : sparkCount--;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +87,7 @@ class _PostCardState extends State<PostCard> {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                    MaterialPageRoute(builder: (_) => UserProfileScreen()),
                   ),
                   child: Container(
                     width: 50,
@@ -65,7 +113,7 @@ class _PostCardState extends State<PostCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(post.titre, style: TextStyle(fontSize: 16, height: 0.8, fontWeight: FontWeight.w800)),
-                        Text("@${post.auteur}", style: TextStyle(fontSize: 12, height: 1.7, fontWeight: FontWeight.w400)),
+                        Text("@${post.pseudo}", style: TextStyle(fontSize: 12, height: 1.7, fontWeight: FontWeight.w400)),
                       ],
                     ),
                   ),
@@ -76,22 +124,23 @@ class _PostCardState extends State<PostCard> {
 
           // Image + contenu + actions — cliquable vers DetailsScreen
           GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-                MaterialPageRoute(builder: (_) => DetailsScreen(post: post))
-
-            ),
+            onTap: () async {
+              final updatedPost = await Navigator.push<Post>(
+                context,
+                MaterialPageRoute(builder: (_) => DetailsScreen(post: post)),
+              );
+              if (updatedPost != null) widget.onSparkToggled(updatedPost);
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                SizedBox(
+                if (post.imageUrl != null)
+                  SizedBox(
                   height: 200,
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      'assets/images/party.jpg',
+                    child: Image.asset(post.imageUrl!,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -118,18 +167,13 @@ class _PostCardState extends State<PostCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Il y a 2h et 13min",
+                        formatTimeAgo(post.createdAt),
                         style: TextStyle(fontSize: 12, height: 1.2, fontWeight: FontWeight.w200),
                       ),
 
                       // Toggle Spark — son propre GestureDetector prend la priorité
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isLiked = !isLiked;
-                            isLiked ? sparkCount++ : sparkCount--;
-                          });
-                        },
+                        onTap: toggleSpark,
                         child: Container(
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.black, width: 1),

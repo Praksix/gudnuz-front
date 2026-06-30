@@ -1,0 +1,291 @@
+{
+  "info": {
+    "name": "GudNuz — Seed Posts",
+    "_postman_id": "gudnuz-seed-001",
+    "description": "Se connecte puis crée 10 posts de test. Lancer via Collection Runner dans l'ordre.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "ton-email@exemple.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "ton-mot-de-passe",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 — Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const json = pm.response.json();",
+              "    pm.collectionVariables.set('jwt_token', json.token);",
+              "    console.log('Token récupéré et sauvegardé.');",
+              "} else {",
+              "    console.error('Échec login — vérifie email/password dans les variables.');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "02 — Post HUMOUR : Le chien pianiste",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Mon chien joue du piano", "type": "text" },
+            { "key": "contenu", "value": "Après 6 mois avec des croquettes en guise de récompense, Bilbo joue Für Elise. C'est faux, lent, et magnifique. Il attend les applaudissements avant de descendre du tabouret.", "type": "text" },
+            { "key": "categorie", "value": "HUMOUR", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "03 — Post ACTU : Forêt urbaine à Lyon",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Lyon plante 300 000 arbres en 3 ans", "type": "text" },
+            { "key": "contenu", "value": "La ville de Lyon achève son plan de reforestation urbaine. 300 000 arbres plantés dans les quartiers et les écoles. La température dans les zones traitées a baissé de 2°C en été.", "type": "text" },
+            { "key": "categorie", "value": "ACTU", "type": "text" },
+            { "key": "source", "value": "Le Monde", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "04 — Post CULTURE : Le vinyl revient",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Le vinyl dépasse le CD pour la première fois depuis 1987", "type": "text" },
+            { "key": "contenu", "value": "Les ventes de vinyle ont dépassé les CD en France cette année. Les disquaires indépendants connaissent un regain porté par les 18-25 ans qui redécouvrent le format physique.", "type": "text" },
+            { "key": "categorie", "value": "CULTURE", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "05 — Post HUMOUR : La réunion de 10 minutes",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "La réunion a duré exactement 10 minutes", "type": "text" },
+            { "key": "contenu", "value": "Ordre du jour traité, décision prise. Mon manager a dit 'on n'a plus rien à se dire' et il a raccroché. J'ai fixé mon écran 30 secondes. C'était possible depuis le début.", "type": "text" },
+            { "key": "categorie", "value": "HUMOUR", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "06 — Post ACTU : Énergie solaire record",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Le solaire couvre 30% de la conso européenne", "type": "text" },
+            { "key": "contenu", "value": "Record historique en juillet : le solaire a couvert 30% de la consommation électrique de l'UE sur une journée. Un signal fort pour les objectifs climatiques 2030.", "type": "text" },
+            { "key": "categorie", "value": "ACTU", "type": "text" },
+            { "key": "source", "value": "Sciences & Avenir", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "07 — Post CULTURE : Roman écrit à 17 ans",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Léa, 17 ans, publie chez Gallimard", "type": "text" },
+            { "key": "contenu", "value": "Commencé dans un carnet pendant le confinement, accepté du premier envoi. Léa Marin sort son roman en septembre. Elle dit avoir écrit pour elle, sans penser que quiconque lirait.", "type": "text" },
+            { "key": "categorie", "value": "CULTURE", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "08 — Post HUMOUR : Le chat et le yoga",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Mon chat est meilleur que moi en yoga", "type": "text" },
+            { "key": "contenu", "value": "Il s'installe sur le tapis avant moi. Chien tête en bas parfait. Il me regarde galérer en guerrier 2. Hier il a tenu l'arbre plus longtemps. Je paie 40€/mois pour perdre contre lui.", "type": "text" },
+            { "key": "categorie", "value": "HUMOUR", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "09 — Post CULTURE : Parking musée Marseille",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Un parking abandonné devient galerie à ciel ouvert", "type": "text" },
+            { "key": "contenu", "value": "Douze artistes ont investi les 4 niveaux d'un parking désaffecté à Marseille. Fresques, installations sonores, sculptures. Entrée libre, ouvert 7j/7. La mairie envisage de pérenniser le lieu.", "type": "text" },
+            { "key": "categorie", "value": "CULTURE", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "10 — Post ACTU : Dauphins en Méditerranée",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "Le dauphin commun de retour en Méditerranée", "type": "text" },
+            { "key": "contenu", "value": "Absent depuis 40 ans, le dauphin commun a été observé en groupe au large de Toulon. Les scientifiques attribuent ce retour aux zones de protection renforcée instaurées en 2021.", "type": "text" },
+            { "key": "categorie", "value": "ACTU", "type": "text" },
+            { "key": "source", "value": "National Geographic", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    },
+    {
+      "name": "11 — Post HUMOUR : La grand-mère et les memes",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "titre", "value": "J'ai expliqué les memes à ma grand-mère", "type": "text" },
+            { "key": "contenu", "value": "20 minutes pour comprendre le principe. Puis elle m'en envoie un par SMS : 'c'est moi quand tu rentres pas pour Noël'. Format correct, texte centré, timing parfait. Je suis fier et terrifié.", "type": "text" },
+            { "key": "categorie", "value": "HUMOUR", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": ["{{base_url}}"],
+          "path": ["posts"]
+        }
+      }
+    }
+  ]
+}

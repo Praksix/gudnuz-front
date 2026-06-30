@@ -1,7 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:gudnuz/services/auth_service.dart';
 import '../widgets/app_bottom_nav_bar.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
+import '../utils/date_utils.dart';
+
 
 class DetailsScreen extends StatefulWidget {
   final Post post;
@@ -14,15 +18,39 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   bool isLiked = false;
   late int sparkCount;
-  int _currentIndex = 0;
 
   final TextEditingController _motifController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    sparkCount = widget.post.sparks;
+    sparkCount = widget.post.sparksCount;
+    isLiked = widget.post.isSparked;
   }
+
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+
+  Future<void> toggleSpark() async {
+    setState(() {
+      isLiked = !isLiked;
+      isLiked ? sparkCount++ : sparkCount--;
+    });
+
+    try {
+      final token = await AuthService().getToken();
+      final response = await _dio.post(
+        '/posts/${widget.post.id}/spark',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      setState(() => sparkCount = response.data['sparksCount'] as int);
+    } on DioException catch (_) {
+      setState(() {
+        isLiked = !isLiked;
+        isLiked ? sparkCount++ : sparkCount--;
+      });
+    }
+  }
+
 
 @override
   void dispose() {
@@ -30,16 +58,33 @@ class _DetailsScreenState extends State<DetailsScreen> {
     super.dispose();
   }
 
+  // Retourne le post mis à jour quand l'écran se ferme
+  Post get _updatedPost => widget.post.copyWith(
+    isSparked: isLiked,
+    sparksCount: sparkCount,
+  );
+
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
-    return Scaffold(
+    return PopScope(
+        canPop: false,
+      // Quand l'utilisateur appuie sur retour, on retourne le post mis à jour
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) Navigator.of(context).pop(_updatedPost);
+      },
+      child: Scaffold(
         backgroundColor: Color(0xFFF2EDE1),
         appBar: AppBar(
-          title: Text(post.categorie, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, )),
+          title: Text(post.categorie, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900)),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            // Retourne le post mis à jour au lieu du pop normal
+            onPressed: () => Navigator.pop(context, _updatedPost),
+          ),
         ),
         body: Container(
           width: double.infinity,
@@ -63,7 +108,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                    MaterialPageRoute(builder: (_) => UserProfileScreen(userId: post.userId)),
                   ),
                   child: Container(
                     width: 40,
@@ -85,7 +130,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                         Text(post.titre,  style: TextStyle(fontSize: 20, height: 1.0, fontWeight: FontWeight.w700, )),
-                        Text("@${post.auteur}",  style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300, )),
+                        Text("@${post.pseudo}",  style: TextStyle(fontSize: 14, height: 1.0, fontWeight: FontWeight.w300, )),
                       ]
                     ),
                   ),
@@ -98,10 +143,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
 
 
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset('assets/images/party.jpg'),
-          ),
+          // Image — affichée uniquement si elle existe
+          if (post.imageUrl != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.network(post.imageUrl!),
+            ),
 
 
           Padding(
@@ -120,7 +167,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                Text("Il y a 2h et 13min",
+                Text(formatTimeAgo(post.createdAt),
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.2,
@@ -160,39 +207,37 @@ class _DetailsScreenState extends State<DetailsScreen> {
               children: [
 
 
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      child: Row(
-                        children: [
-                          Icon(Icons.language, size: 16),
-                          const SizedBox(width: 10),
-                          Text("http://lemonde.fr",
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              )
-                          ),
-                        ],
+                // Source — affichée uniquement pour les posts ACTU et si elle existe
+                if (post.source != null)
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        child: Row(
+                          children: [
+                            Icon(Icons.language, size: 16),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                post.source!,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
 
                 const SizedBox(width: 10),
                 //Toggle Spark
             GestureDetector(
-              onTap: () {
-                setState(() {
-                  isLiked = !isLiked;
-                  isLiked ? sparkCount++ : sparkCount--;
-                });
-              },
+                onTap: toggleSpark,
               child:
                 Container(
                   decoration: BoxDecoration(
@@ -294,6 +339,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       ),
     ),
 
-  );
+  ));
   }
 }

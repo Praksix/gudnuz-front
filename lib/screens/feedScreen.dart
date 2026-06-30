@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/post.dart';
+import '../services/auth_service.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -11,109 +13,75 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
 
-  String _categorie = "TOP";
+  // Le client HTTP — à déclarer une seule fois dans la classe
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: 'http://localhost:8080/api', // émulateur Android
+  ));
+
+  late Future<List<Post>> _postsFuture;
+  List<Post> _posts = [];
+  final Set<String> _likedPostIds = {};
 
 
-
-  final List<Post> _tousPosts = [
-    Post(
-      titre: "Un accord climatique historique signé à Genève",
-      auteur: "marie_info",
-      contenu: "195 pays ont ratifié un accord inédit pour réduire les émissions de CO₂ de 60% d'ici 2035. Une avancée saluée par l'ensemble de la communauté scientifique.",
-      categorie: "ACTU",
-      sparks: 312,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 1)),
-    ),
-    Post(
-      titre: "Ce chien qui attend son maître depuis 3 ans",
-      auteur: "good_vibes_only",
-      contenu: "Les habitants du village lui apportent à manger chaque jour. Finalement, son maître est rentré de l'hôpital hier. Les images sont bouleversantes.",
-      categorie: "ACTU",
-      sparks: 874,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 3)),
-    ),
-    Post(
-      titre: "Un lycéen invente un système de filtration low-cost",
-      auteur: "futur_now",
-      contenu: "À 17 ans, Kofi Mensah a conçu un filtre à eau avec des matériaux recyclés qui alimente désormais son village entier au Ghana. Son invention est open-source.",
-      categorie: "ACTU",
-      sparks: 1203,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 5)),
-    ),
-    Post(
-      titre: "Quand tu demandes à ChatGPT de faire ta compta",
-      auteur: "lol_bruh",
-      contenu: "Il m'a rendu un fichier Excel avec une colonne 'Dépenses existentielles'. Je lui ai demandé ce que c'était. Il m'a dit : 'votre abonnement Netflix'.",
-      categorie: "HUMOUR",
-      sparks: 2041,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(minutes: 45)),
-    ),
-    Post(
-      titre: "Le stagiaire qui a mis en prod un vendredi",
-      auteur: "dev_life",
-      contenu: "Et le serveur a tenu. Toute la boîte l'a applaudi. Il a été embauché le lendemain. Morale : parfois les fous ont raison.",
-      categorie: "HUMOUR",
-      sparks: 567,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 2)),
-    ),
-    Post(
-      titre: "Ce compilateur d'expressions intraduisibles",
-      auteur: "linguist_fr",
-      contenu: "En portugais, 'saudade' désigne une mélancolie douce pour quelque chose qu'on a aimé. En japonais, 'komorebi' décrit la lumière du soleil filtrée par les feuilles. On manque de mots en français.",
-      categorie: "HUMOUR",
-      sparks: 189,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 6)),
-    ),
-    Post(
-      titre: "Stromae de retour avec un album surprise",
-      auteur: "culture_radar",
-      contenu: "Disponible dès ce soir à minuit, 'Nuit Noire' comprend 11 titres enregistrés à Bruxelles, Tokyo et Lagos. Les premières écoutes parlent d'un chef-d'œuvre.",
-      categorie: "CULTURE",
-      sparks: 3892,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(minutes: 20)),
-    ),
-    Post(
-      titre: "Ce livre lu par 10 millions de personnes en un mois",
-      auteur: "biblio_plus",
-      contenu: "'Les Racines du ciel' de Romain Gary, republié avec une préface inédite, cartonne sur TikTok. Une nouvelle génération découvre un classique oublié.",
-      categorie: "CULTURE",
-      sparks: 445,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 4)),
-    ),
-    Post(
-      titre: "Le street art qui transforme une ville entière",
-      auteur: "art_in_streets",
-      contenu: "La ville de Valparaíso au Chili est devenue un musée à ciel ouvert. 800 murales d'artistes du monde entier couvrent ses collines. Un projet communautaire sans subvention.",
-      categorie: "CULTURE",
-      sparks: 728,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 7)),
-    ),
-    Post(
-      titre: "Un cinéaste de 19 ans remporte la Palme d'Or",
-      auteur: "cine_actu",
-      contenu: "Tourné avec un téléphone et un budget de 800€, 'Demain matin' a ému tout Cannes. Le réalisateur, Amine Bouali, dédie son prix à sa mère et à son quartier.",
-      categorie: "CULTURE",
-      sparks: 5610,
-      image: "assets/images/party.jpg",
-      createdAt: DateTime.now().subtract(Duration(hours: 9)),
-    ),
-  ];
-
-
-  List<Post> get _postsFiltres {
-    if (_categorie == "TOP") return _tousPosts;
-    return _tousPosts.where((p) => p.categorie == _categorie).toList();
+  @override
+  void initState() {
+    super.initState();
+    _postsFuture = _loadPosts();
   }
 
+  List<Post> _applyLikedState(List<Post> posts) {
+    if (_likedPostIds.isEmpty) return posts;
+    return posts
+        .map((p) => _likedPostIds.contains(p.id) ? p.copyWith(isSparked: true) : p)
+        .toList();
+  }
+
+  Future<List<Post>> _loadPosts({String? categorie}) async {
+    final posts = await getPosts(categorie: categorie);
+    final merged = _applyLikedState(posts);
+    setState(() => _posts = merged);
+    return merged;
+  }
+
+  Future<void> _onRefresh() async {
+    final cat = _categorie == "TOP" ? null : _categorie;
+    final posts = await getPosts(categorie: cat);
+    setState(() => _posts = _applyLikedState(posts));
+  }
+
+  void _onSparkToggled(Post updatedPost) {
+    setState(() {
+      final index = _posts.indexWhere((p) => p.id == updatedPost.id);
+      if (index != -1) _posts[index] = updatedPost;
+      if (updatedPost.isSparked) {
+        _likedPostIds.add(updatedPost.id);
+      } else {
+        _likedPostIds.remove(updatedPost.id);
+      }
+    });
+  }
+
+
+
+  String _categorie = "TOP";
+
+  Future<List<Post>> getPosts({String? categorie}) async {
+    try {
+      final token = await AuthService().getToken();
+      final response = await _dio.get(
+        '/posts',
+        queryParameters: categorie != null ? {'categorie': categorie} : null,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      // response.data est une List de Maps
+      final List<dynamic> data = response.data;
+      return data.map((json) => Post.fromJson(json)).toList();
+
+    } on DioException catch (e) {
+      throw Exception('Erreur réseau : ${e.message}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,28 +103,40 @@ class _FeedScreenState extends State<FeedScreen> {
             ListTile(
               title: Text("Top", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
               onTap: () {
-                setState(() { _categorie = "TOP"; });
+                setState(() {
+                  _categorie = "TOP";
+                  _postsFuture = _loadPosts();
+                });
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text("Actualités", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
               onTap: () {
-                setState(() { _categorie = "ACTU"; });
+                setState(() {
+                  _categorie = "ACTU";
+                  _postsFuture = _loadPosts(categorie: "ACTU");
+                });
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text("Humour", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
               onTap: () {
-                setState(() { _categorie = "HUMOUR"; });
+                setState(() {
+                  _categorie = "HUMOUR";
+                  _postsFuture = _loadPosts(categorie: "HUMOUR");
+                });
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: Text("Culture", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
               onTap: () {
-                setState(() { _categorie = "CULTURE"; });
+                setState(() {
+                  _categorie = "CULTURE";
+                  _postsFuture = _loadPosts(categorie: "CULTURE");
+                });
                 Navigator.pop(context);
               },
             ),
@@ -165,19 +145,62 @@ class _FeedScreenState extends State<FeedScreen> {
             ListTile(
               leading: Icon(Icons.logout, color: Colors.red,),
               title: Text("Déconnexion", style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold)),
-              onTap: () => Navigator.pop(context),
+              onTap: () async {
+                await AuthService().logout();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/connexion',
+                        (route) => false,
+                  );
+                }
+              },
             ),
             const SizedBox(height: 20)
           ],
         ),
       ),
-      body: ListView.builder(
-        itemCount: _postsFiltres.length,
-        itemBuilder: (context, index) {
-          final post = _postsFiltres[index];
-          return PostCard(post: post);
+      body: FutureBuilder<List<Post>>(
+        future: _postsFuture,
+        builder: (context, snapshot) {
+
+          // État 1 : en cours de chargement
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // État 2 : une erreur est survenue
+          if (snapshot.hasError) {
+            return Center(child: Text('Erreur : ${snapshot.error}'));
+          }
+
+          // État 3 : les données sont là
+          final posts = snapshot.data!;
+
+          if (posts.isEmpty) {
+            return const Center(child: Text('Aucun post pour le moment.'));
+          }
+
+          return RefreshIndicator(
+              onRefresh: _onRefresh,
+
+
+
+
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: _posts.length,
+              itemBuilder: (context, index) {
+              return PostCard(
+                post: _posts[index],
+                onSparkToggled: _onSparkToggled,
+              );
+            },
+          ));
         },
       ),
+
+
 
     );
   }

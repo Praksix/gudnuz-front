@@ -202,39 +202,35 @@ class _CreateScreenState extends State<CreateScreen> {
 
                           SizedBox(
                             width: 270,
-                            child: Expanded(
-
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black, width: 1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child : Column(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black, width: 1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-
-                               Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: Row(
-                                    children: [
-
-                                      Expanded(
-                                        child: TextField(
-                                          maxLines: null,
-                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
-                                          decoration: InputDecoration(
-                                            contentPadding: EdgeInsets.symmetric(vertical: 1),
-                                            hintText: "Ton pote Seb n'est pas une source",
-                                            hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
-                                            border: InputBorder.none,
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            maxLines: null,
+                                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
+                                            decoration: InputDecoration(
+                                              contentPadding: EdgeInsets.symmetric(vertical: 1),
+                                              hintText: "Ton pote Seb n'est pas une source",
+                                              hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
+                                              border: InputBorder.none,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ]),
-                            ),
+                                ],
+                              ),
                             ),
                           ),
 

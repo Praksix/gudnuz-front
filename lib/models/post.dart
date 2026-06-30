@@ -1,21 +1,59 @@
-import 'dart:ui';
-
 class Post {
+  final String id;
+  final String userId;
   final String titre;
-  final String image;
+  final String? imageUrl;
   final DateTime createdAt;
-  final String auteur;
+  final String pseudo;
   final String contenu;
-  final String categorie; // "ACTU", "HUMOUR", "CULTURE"
-  final int sparks;
+  final String? source;
+  final String categorie;
+  final int sparksCount;
+  final bool isSparked;
 
   Post({
-    required this.auteur,
+    required this.id,
+    required this.userId,
+    required this.pseudo,
     required this.contenu,
     required this.categorie,
-    required this.sparks,
+    required this.sparksCount,
     required this.titre,
-    required this.image,
     required this.createdAt,
+    required this.isSparked,
+    this.imageUrl,
+    this.source,
   });
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id:          json['id']          as String,
+      userId:      json['userId']      as String,
+      titre:       json['titre']       as String,
+      pseudo:      json['pseudo']      as String,
+      contenu:     json['contenu']     as String,
+      categorie:   json['categorie']   as String,
+      sparksCount: json['sparksCount'] as int,
+      isSparked:   json['isSparked']   as bool? ?? false,
+      source:      json['source']      as String?,
+      imageUrl:    json['imageUrl']    as String?,
+      createdAt:   DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  Post copyWith({bool? isSparked, int? sparksCount}) {
+    return Post(
+      id:          id,
+      userId:      userId,
+      titre:       titre,
+      pseudo:      pseudo,
+      contenu:     contenu,
+      categorie:   categorie,
+      createdAt:   createdAt,
+      imageUrl:    imageUrl,
+      source:      source,
+      sparksCount: sparksCount ?? this.sparksCount,
+      isSparked:   isSparked  ?? this.isSparked,
+    );
+  }
 }
