@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav_bar.dart';
 import '../screens/userProfileScreen.dart';
-
+import 'package:gudnuz/services/auth_service.dart';
 import 'package:gudnuz/theme/colors.dart';
+import 'package:dio/dio.dart';
 
 
 class CreateScreen extends StatefulWidget {
@@ -13,11 +14,71 @@ class CreateScreen extends StatefulWidget {
 }
 
 class _CreateScreenState extends State<CreateScreen> {
-  bool isLiked = false;
-  int sparkCount = 245;
-  int _currentIndex = 1;
+
+  final TextEditingController _titreController = TextEditingController();
+  final TextEditingController _contenuController = TextEditingController();
+  final TextEditingController _sourceController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titreController.dispose();
+    _contenuController.dispose();
+    _sourceController.dispose();
+    super.dispose();
+  }
 
   String _selectedCategory = 'Actualités';
+
+
+  // Le client HTTP — à déclarer une seule fois dans la classe
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: 'http://localhost:8080/api', // émulateur Android
+  ));
+
+
+
+  Future<void>  _createPost() async {
+
+    try {
+      final token = await AuthService().getToken();
+      final formData = FormData.fromMap({
+        'titre': _titreController.text,
+        'contenu': _contenuController.text,
+        'categorie': {
+          'Actualités': 'ACTU',
+          'Humour': 'HUMOUR',
+          'Culture': 'CULTURE',
+        }[_selectedCategory],
+        if (_selectedCategory == 'Actualités') 'source': _sourceController.text,
+      });
+
+      await _dio.post(
+        '/posts',
+        data: formData,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          contentType: 'multipart/form-data',
+        ),
+      );
+      _titreController.clear();
+      _contenuController.clear();
+      _sourceController.clear();
+
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(context, '/main');
+      }
+
+    } on DioException catch (e) {
+      print('Erreur : ${e.message}');
+      print('Réponse : ${e.response?.data}');
+    }
+
+  }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +217,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30, left: 30, right: 30),
 
-                  child: TextField(
+                  child: TextField( controller: _titreController,
                     maxLines: null,
                     maxLength: 90,
                     style: TextStyle(fontSize: 35, fontWeight: FontWeight.w700, height: 1.0, color: Colors.black),
@@ -170,13 +231,13 @@ class _CreateScreenState extends State<CreateScreen> {
 
 
                 SizedBox(
-                  height: 220,
+                  height: 170,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: TextField(
+                    child: TextField( controller: _contenuController,
                       maxLines: null,
                      // maxLength: 500,
-                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
                       decoration: InputDecoration(
                         hintText: "Mets de la lumière dans les yeux des utilisateurs !",
                         hintStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.w400, height: 1.0, color: Colors.grey),
@@ -184,82 +245,51 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                     ),
                   ),
-                ),
 
-                Padding(
+                ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10, right: 30),
+                      child: Icon(Icons.add_a_photo, size: 35),
+                    ),
+                  ),
+
+                  if (_selectedCategory == 'Actualités')
+                    Padding(
                   padding: const EdgeInsets.only(left:30, top: 10),
                   child: Text("Source obligatoire pour les actualités :",
 
                       textAlign: TextAlign.left,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 0.6, color: Colors.black)),
                 ),
-                Padding(
-                      padding: const EdgeInsets.only(top:10, left: 30),
 
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-
-                          SizedBox(
-                            width: 270,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black, width: 1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextField(
-                                            maxLines: null,
-                                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
-                                            decoration: InputDecoration(
-                                              contentPadding: EdgeInsets.symmetric(vertical: 1),
-                                              hintText: "Ton pote Seb n'est pas une source",
-                                              hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
-                                              border: InputBorder.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-
-                              Container(
-
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 30),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-
-                                      Row(
-                                        children: [
-                                          Icon(Icons.add_a_photo, size: 35),
-                                        ],
-                                      ),
-
-                                    ],
-                                  ),
-                                ),
-
-
-                              ),
-
-
-                        ],
+                if (_selectedCategory == 'Actualités')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 1),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextField(
+                          controller: _sourceController,
+                          maxLines: null,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                            hintText: "Ton pote Seb n'est pas une source",
+                            hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+
 
 
 
@@ -273,7 +303,7 @@ class _CreateScreenState extends State<CreateScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
 
-                            onPressed: () {},
+                            onPressed: _createPost,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 1),
 

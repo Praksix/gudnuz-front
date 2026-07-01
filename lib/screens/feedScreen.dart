@@ -20,7 +20,6 @@ class _FeedScreenState extends State<FeedScreen> {
 
   late Future<List<Post>> _postsFuture;
   List<Post> _posts = [];
-  final Set<String> _likedPostIds = {};
 
 
   @override
@@ -29,35 +28,22 @@ class _FeedScreenState extends State<FeedScreen> {
     _postsFuture = _loadPosts();
   }
 
-  List<Post> _applyLikedState(List<Post> posts) {
-    if (_likedPostIds.isEmpty) return posts;
-    return posts
-        .map((p) => _likedPostIds.contains(p.id) ? p.copyWith(isSparked: true) : p)
-        .toList();
-  }
-
   Future<List<Post>> _loadPosts({String? categorie}) async {
     final posts = await getPosts(categorie: categorie);
-    final merged = _applyLikedState(posts);
-    setState(() => _posts = merged);
-    return merged;
+    setState(() => _posts = posts);
+    return posts;
   }
 
   Future<void> _onRefresh() async {
     final cat = _categorie == "TOP" ? null : _categorie;
     final posts = await getPosts(categorie: cat);
-    setState(() => _posts = _applyLikedState(posts));
+    setState(() => _posts = posts);
   }
 
   void _onSparkToggled(Post updatedPost) {
     setState(() {
       final index = _posts.indexWhere((p) => p.id == updatedPost.id);
       if (index != -1) _posts[index] = updatedPost;
-      if (updatedPost.isSparked) {
-        _likedPostIds.add(updatedPost.id);
-      } else {
-        _likedPostIds.remove(updatedPost.id);
-      }
     });
   }
 

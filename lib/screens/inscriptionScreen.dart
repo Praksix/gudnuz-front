@@ -44,7 +44,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
       setState(() {
         _errorMessage = e.response?.statusCode == 409
             ? 'Cet email est déjà utilisé'
-            : '[DEBUG] ${e.type} | status: ${e.response?.statusCode} | ${e.message}';
+            : 'Une erreur est survenue, réessaie plus tard';
       });
     } finally {
       setState(() => _isLoading = false);

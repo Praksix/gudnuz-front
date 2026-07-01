@@ -34,10 +34,10 @@ class Post {
       contenu:     json['contenu']     as String,
       categorie:   json['categorie']   as String,
       sparksCount: json['sparksCount'] as int,
-      isSparked:   json['isSparked']   as bool? ?? false,
+      isSparked:   json['sparked']      as bool? ?? false,
       source:      json['source']      as String?,
       imageUrl:    json['imageUrl']    as String?,
-      createdAt:   DateTime.parse(json['createdAt'] as String),
+      createdAt:   DateTime.parse('${json['createdAt']}Z').toLocal(),
     );
   }
 
