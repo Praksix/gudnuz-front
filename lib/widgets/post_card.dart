@@ -31,9 +31,7 @@ class _PostCardState extends State<PostCard> {
   @override
   void didUpdateWidget(PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.post.id != widget.post.id) {
-      isLiked = widget.post.isSparked;
-    }
+    isLiked = widget.post.isSparked;
     sparkCount = widget.post.sparksCount;
   }
 
@@ -57,8 +55,7 @@ class _PostCardState extends State<PostCard> {
       widget.onSparkToggled(
         widget.post.copyWith(isSparked: isLiked, sparksCount: newCount),
       );
-    } on DioException catch (e) {
-      print('SPARK ERROR: ${e.response?.statusCode} — ${e.message}');
+    } on DioException catch (_) {
       setState(() {
         isLiked = !isLiked;
         isLiked ? sparkCount++ : sparkCount--;
@@ -83,10 +80,10 @@ class _PostCardState extends State<PostCard> {
               children: [
 
                 GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => UserProfileScreen()),
-                  ),
+                onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => UserProfileScreen(userId: post.userId)),
+    ),
                   child: Container(
                     width: 50,
                     height: 50,
