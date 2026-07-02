@@ -1,9 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import '../widgets/app_bottom_nav_bar.dart';
-import '../screens/userProfileScreen.dart';
 import 'package:gudnuz/services/auth_service.dart';
 import 'package:gudnuz/theme/colors.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 class CreateScreen extends StatefulWidget {
@@ -18,6 +18,8 @@ class _CreateScreenState extends State<CreateScreen> {
   final TextEditingController _titreController = TextEditingController();
   final TextEditingController _contenuController = TextEditingController();
   final TextEditingController _sourceController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
+
 
   @override
   void dispose() {
@@ -28,6 +30,7 @@ class _CreateScreenState extends State<CreateScreen> {
   }
 
   String _selectedCategory = 'Actualités';
+  File? _imageFile;
 
 
   // Le client HTTP — à déclarer une seule fois dans la classe
@@ -35,6 +38,16 @@ class _CreateScreenState extends State<CreateScreen> {
     baseUrl: 'http://localhost:8080/api', // émulateur Android
   ));
 
+
+Future<void> _pickImage() async {
+  final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+  if (picked != null){
+    setState(() =>  _imageFile = File(picked.path));
+  }
+}
+void _deleteImage() {
+  setState(() =>  _imageFile = null);
+}
 
 
   Future<void>  _createPost() async {
@@ -50,6 +63,8 @@ class _CreateScreenState extends State<CreateScreen> {
           'Culture': 'CULTURE',
         }[_selectedCategory],
         if (_selectedCategory == 'Actualités') 'source': _sourceController.text,
+        if (_imageFile != null) 'image': await MultipartFile.fromFile(_imageFile!.path, filename: 'image.jpg',
+        ),
       });
 
       await _dio.post(
@@ -74,6 +89,10 @@ class _CreateScreenState extends State<CreateScreen> {
     }
 
   }
+
+
+
+
 
 
 
@@ -247,6 +266,10 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
 
                 ),
+
+                  GestureDetector (
+                    onTap: _pickImage,
+                    child:
                   Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
@@ -254,6 +277,30 @@ class _CreateScreenState extends State<CreateScreen> {
                       child: Icon(Icons.add_a_photo, size: 35),
                     ),
                   ),
+
+    ),
+
+                  if (_imageFile != null)
+
+                    Padding(
+                      padding: const EdgeInsets.only(left:30, right: 30, top: 10, bottom: 20),
+                      child: Stack(
+                        children: [
+                          Image.file(_imageFile!),
+                          Positioned(
+                            bottom: 8,
+                            right: 8,
+                            child:
+
+                            GestureDetector (
+                              onTap: _deleteImage,
+                              child:
+                            Icon(Icons.close, size: 35, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   if (_selectedCategory == 'Actualités')
                     Padding(
