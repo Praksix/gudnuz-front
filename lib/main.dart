@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:gudnuz/theme/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/welcomeScreen.dart';
 import 'screens/feedScreen.dart';
 import 'screens/userProfileScreen.dart';
 import 'screens/createScreen.dart';
 import 'screens/connexionScreen.dart';
 import 'screens/inscriptionScreen.dart';
+import 'screens/lockoutScreen.dart';
 import 'package:gudnuz/services/auth_service.dart';
 
-// "async" obligatoire car on utilise "await" dans main
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final isLoggedIn = await AuthService().isLoggedIn();
 
-  runApp(MyApp(initialRoute: isLoggedIn ? '/main' : '/welcome'));
+  String initialRoute = '/welcome';
+
+  if (isLoggedIn) {
+    final prefs = await SharedPreferences.getInstance();
+    final finDePauseMs = prefs.getInt('lockout_end_at');
+    final lockoutActif = finDePauseMs != null &&
+        DateTime.fromMillisecondsSinceEpoch(finDePauseMs).isAfter(DateTime.now());
+
+    initialRoute = lockoutActif ? '/lockout' : '/main';
+  }
+
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
@@ -33,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/connexion':  (context) => const ConnexionScreen(),
         '/inscription':(context) => const InscriptionScreen(),
         '/main':       (context) => const MainScreen(),
+        '/lockout':    (context) => const LockoutScreen(),
       },
     );
   }

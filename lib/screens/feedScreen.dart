@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/post.dart';
 import '../services/auth_service.dart';
+import 'dart:ui';
+import 'lockoutScreen.dart';
+
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -13,6 +16,18 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
 
+  final ScrollController  _scrollController = ScrollController();
+  double _opacity = 1.0;
+  bool _isLocked = false;
+
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
     baseUrl: 'http://localhost:8080/api', // émulateur Android
@@ -22,10 +37,30 @@ class _FeedScreenState extends State<FeedScreen> {
   List<Post> _posts = [];
 
 
+
   @override
   void initState() {
     super.initState();
     _postsFuture = _loadPosts();
+    _scrollController.addListener(() {
+      final offset = _scrollController.offset;
+      final seuilDeDepart = 1200;
+      final seuilDeFin = 1700;
+      final t = ((offset - seuilDeDepart) / (seuilDeFin - seuilDeDepart)).clamp(0.0, 1.0);
+      final opacity = lerpDouble(1.0, 0.0, t)!;
+      setState(() => _opacity = opacity);
+      print(_opacity);
+      if (_opacity <= 0.2 && !_isLocked) {
+      _isLocked = true;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => LockoutScreen()),
+      );
+
+      }
+    });
+
+
   }
 
   Future<List<Post>> _loadPosts({String? categorie}) async {
@@ -174,13 +209,21 @@ class _FeedScreenState extends State<FeedScreen> {
 
 
             child: ListView.builder(
+                controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: _posts.length,
               itemBuilder: (context, index) {
-              return PostCard(
+
+
+              return
+
+                Opacity(
+                    opacity: _opacity,
+                    child:
+                    PostCard(
                 post: _posts[index],
                 onSparkToggled: _onSparkToggled,
-              );
+              ));
             },
           ));
         },
