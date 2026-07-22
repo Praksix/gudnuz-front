@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gudnuz/services/auth_service.dart';
-import '../widgets/app_bottom_nav_bar.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import '../utils/date_utils.dart';
@@ -147,7 +146,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           if (post.imageUrl != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.network(post.imageUrl!),
+              child: Image.network(post.displayImageUrl!, fit: BoxFit.cover)  ,
             ),
 
 
@@ -309,7 +308,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ),
                             TextButton(
                               onPressed: () {
-                                final motif = _motifController.text.trim();
                                 Navigator.pop(context);
                               },
                               child: Text('Envoyer', style: TextStyle(color: Colors.red)),
