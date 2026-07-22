@@ -142,7 +142,7 @@ class _PostCardState extends State<PostCard> {
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.network('http://localhost:8080${post.imageUrl!}',
+                    child: Image.network(post.displayImageUrl!,
                       fit: BoxFit.cover,
                     ),
                   ),

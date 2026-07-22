@@ -146,7 +146,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           if (post.imageUrl != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.network('http://localhost:8080${post.imageUrl!}', fit: BoxFit.cover)  ,
+              child: Image.network(post.displayImageUrl!, fit: BoxFit.cover)  ,
             ),
 
 

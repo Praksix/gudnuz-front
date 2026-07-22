@@ -41,6 +41,11 @@ class Post {
     );
   }
 
+  String? get displayImageUrl {
+    if (imageUrl == null) return null;
+    return imageUrl!.startsWith('http') ? imageUrl : 'http://localhost:8080$imageUrl';
+  }
+
   Post copyWith({bool? isSparked, int? sparksCount}) {
     return Post(
       id:          id,
