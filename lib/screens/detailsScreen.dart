@@ -115,7 +115,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
                       image: DecorationImage(
-                        image: AssetImage('assets/images/pp.jpg'),
+                        image: (post.avatarUrl != null
+                            ? NetworkImage(post.displayAvatarUrl!)
+                            : AssetImage('assets/images/pp.jpg')
+                        ) as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
