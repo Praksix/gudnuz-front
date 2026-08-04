@@ -2,9 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/post.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'dart:ui';
 import 'lockoutScreen.dart';
+import 'moderationScreen.dart';
 
 
 class FeedScreen extends StatefulWidget {
@@ -14,11 +16,15 @@ class FeedScreen extends StatefulWidget {
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
+
 class _FeedScreenState extends State<FeedScreen> {
 
   final ScrollController  _scrollController = ScrollController();
   double _opacity = 1.0;
   bool _isLocked = false;
+
+
+
 
 
   @override
@@ -36,12 +42,15 @@ class _FeedScreenState extends State<FeedScreen> {
   late Future<List<Post>> _postsFuture;
   List<Post> _posts = [];
 
+  late Future<User> _userFuture;
+
 
 
   @override
   void initState() {
     super.initState();
     _postsFuture = _loadPosts();
+    _userFuture = _loadUser();
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
       final seuilDeDepart = 1200;
@@ -67,6 +76,11 @@ class _FeedScreenState extends State<FeedScreen> {
     final posts = await getPosts(categorie: categorie);
     setState(() => _posts = posts);
     return posts;
+  }
+
+  Future<User> _loadUser() async {
+    final user = await getUser();
+    return user;
   }
 
   Future<void> _onRefresh() async {
@@ -97,7 +111,26 @@ class _FeedScreenState extends State<FeedScreen> {
 
       // response.data est une List de Maps
       final List<dynamic> data = response.data;
-      return data.map((json) => Post.fromJson(json)).toList();
+      print('POSTS REÇUS : $data');
+      return data.map((json) {
+        print('PARSING : $json');
+        return Post.fromJson(json);
+      }).toList();
+
+    } on DioException catch (e) {
+      throw Exception('Erreur réseau : ${e.message}');
+    }
+  }
+
+  Future<User> getUser() async {
+    try {
+      final token = await AuthService().getToken();
+      final response = await _dio.get(
+        '/users/me',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      return User.fromJson(response.data);
 
     } on DioException catch (e) {
       throw Exception('Erreur réseau : ${e.message}');
@@ -113,6 +146,20 @@ class _FeedScreenState extends State<FeedScreen> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          FutureBuilder<User>(
+            future: _userFuture,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              final user = snapshot.data!;
+              if (user.role != 'ADMIN' && user.role != 'MODERATOR') return const SizedBox();
+              return IconButton(
+                icon: const Icon(Icons.shield_outlined),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ModerationScreen())),
+              );
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         backgroundColor: Color(0xFFF2EDE1),

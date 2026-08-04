@@ -36,7 +36,9 @@ class _ConnexionScreenState extends State<ConnexionScreen> {
         _emailController.text.trim(),
         _passwordController.text,
       );
-      if (mounted) Navigator.pushReplacementNamed(context, '/main');
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+      }
     } on DioException catch (e) {
       setState(() {
         _errorMessage = e.response?.statusCode == 401

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gudnuz/services/auth_service.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
+import '../models/user.dart';
 import '../utils/date_utils.dart';
 
 
@@ -19,15 +20,100 @@ class _DetailsScreenState extends State<DetailsScreen> {
   late int sparkCount;
 
   final TextEditingController _motifController = TextEditingController();
+  late Future<User> _userFuture;
 
   @override
   void initState() {
     super.initState();
     sparkCount = widget.post.sparksCount;
     isLiked = widget.post.isSparked;
+    _userFuture = _loadUser();
   }
 
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+
+
+  Future<User> _loadUser() async {
+    final user = await getUser();
+    return user;
+  }
+
+  Future<User> getUser() async {
+    try {
+      final token = await AuthService().getToken();
+      final response = await _dio.get(
+        '/users/me',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      return User.fromJson(response.data);
+
+    } on DioException catch (e) {
+      throw Exception('Erreur réseau : ${e.message}');
+    }
+  }
+
+  Future<void> _reportPost() async {
+    if (_motifController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Le motif est obligatoire')),
+      );
+      return;
+    }
+
+
+
+
+    try {
+      final token = await AuthService().getToken();
+      await _dio.post(
+        '/posts/${widget.post.id}/report',
+        data: {'motif': _motifController.text},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      _motifController.clear();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signalement envoyé, merci !')),
+      );
+
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final message = e.response?.statusCode == 409
+          ? 'Tu as déjà signalé ce post'
+          : 'Une erreur est survenue, réessaie plus tard';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+
+
+  Future<void> _removePost() async {
+
+    try {
+      final token = await AuthService().getToken();
+      await _dio.patch(
+        '/moderation/posts/${widget.post.id}/remove',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post Supprimé avec succès')),
+      );
+      Navigator.pop(context);
+
+    } on DioException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Une erreur est survenue, réessaie plus tard')));
+    }
+  }
+
+
+
+
+
 
   Future<void> toggleSpark() async {
     setState(() {
@@ -115,7 +201,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
                       image: DecorationImage(
-                        image: AssetImage('assets/images/pp.jpg'),
+                        image: (post.avatarUrl != null
+                            ? NetworkImage(post.displayAvatarUrl!)
+                            : AssetImage('assets/images/pp.jpg')
+                        ) as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -309,6 +398,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
+                                _reportPost();
                               },
                               child: Text('Envoyer', style: TextStyle(color: Colors.red)),
                             ),
@@ -325,15 +415,69 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     height: 1.2,
                     fontWeight: FontWeight.w400,
                     color: Colors.red,
-                  ))
-              )
-          )
+                  )),
+              ),
+          ),
 
+          FutureBuilder<User>(
+            future: _userFuture,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              final user = snapshot.data!;
+              if (user.role != 'ADMIN' && user.role != 'MODERATOR') return const SizedBox();
+              return Center(
+                child: OutlinedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: Color(0xFFF2EDE1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          title: Text('Gérer le post'),
+                          content: Text('Cette action retire le post pour tous les utilisateurs.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('annuler', style: TextStyle(color: Colors.grey)),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _removePost();
+                              },
+                              child: Text('Supprimer', style: TextStyle(color: Colors.red)),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red, width: 1),
+                  ),
+                  child: const Text('gérer ce post', style: TextStyle(
+                    fontSize: 12,
+                    height: 1.2,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.red,
+                  )),
+                ),
+              );
+            },
+          ),
 
         ],
+
+
             ),
+
           ),
-        ]),
+                    ]
+
+            ),
       ),
     ),
 

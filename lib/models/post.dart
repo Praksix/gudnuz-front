@@ -3,6 +3,7 @@ class Post {
   final String userId;
   final String titre;
   final String? imageUrl;
+  final String? avatarUrl;
   final DateTime createdAt;
   final String pseudo;
   final String contenu;
@@ -22,6 +23,7 @@ class Post {
     required this.createdAt,
     required this.isSparked,
     this.imageUrl,
+    this.avatarUrl,
     this.source,
   });
 
@@ -34,9 +36,10 @@ class Post {
       contenu:     json['contenu']     as String,
       categorie:   json['categorie']   as String,
       sparksCount: json['sparksCount'] as int,
-      isSparked:   json['sparked']      as bool? ?? false,
+      isSparked:   json['sparked']     as bool? ?? false,
       source:      json['source']      as String?,
       imageUrl:    json['imageUrl']    as String?,
+      avatarUrl:    json['avatarUrl']  as String?,
       createdAt:   DateTime.parse('${json['createdAt']}Z').toLocal(),
     );
   }
@@ -44,6 +47,11 @@ class Post {
   String? get displayImageUrl {
     if (imageUrl == null) return null;
     return imageUrl!.startsWith('http') ? imageUrl : 'http://localhost:8080$imageUrl';
+  }
+
+  String? get displayAvatarUrl {
+    if (avatarUrl == null) return null;
+    return avatarUrl!.startsWith('http') ? avatarUrl : 'http://localhost:8080$avatarUrl';
   }
 
   Post copyWith({bool? isSparked, int? sparksCount}) {
@@ -56,6 +64,7 @@ class Post {
       categorie:   categorie,
       createdAt:   createdAt,
       imageUrl:    imageUrl,
+      avatarUrl:    avatarUrl,
       source:      source,
       sparksCount: sparksCount ?? this.sparksCount,
       isSparked:   isSparked  ?? this.isSparked,
