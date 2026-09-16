@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v5
+
+      - name: Configuration Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # channel: stable = version stable la plus récente au moment du run.
+          # A remplacer par un `flutter-version: 'x.y.z'` figé (via `flutter --version` en local)
+          # si on veut un environnement CI 100% reproductible dans le temps.
+          channel: stable
+          cache: true
+
+      - name: Récupération des dépendances
+        run: flutter pub get
+
+      - name: Analyse statique (lint)
+        run: flutter analyze
+
+      - name: Tests unitaires / widget
+        run: flutter test

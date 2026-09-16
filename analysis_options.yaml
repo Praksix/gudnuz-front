@@ -21,8 +21,12 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Erreurs volontairement loguées en console uniquement (jamais exposées à l'utilisateur) —
+    # voir _handleError dans userProfileScreen.dart.
+    avoid_print: false
+    # Écrans nommés en camelCase dans tout le projet (userProfileScreen.dart, feedScreen.dart, ...) —
+    # convention déjà établie, pas une erreur à corriger fichier par fichier.
+    file_names: false
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

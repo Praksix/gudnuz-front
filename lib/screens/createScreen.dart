@@ -79,9 +79,8 @@ void _deleteImage() {
       _contenuController.clear();
       _sourceController.clear();
 
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, '/main');
-      }
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/main');
 
     } on DioException catch (e) {
       print('Erreur : ${e.message}');
@@ -111,7 +110,6 @@ void _deleteImage() {
           automaticallyImplyLeading: false,
         ),
       body:  SingleChildScrollView(
-        child: Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -383,8 +381,6 @@ void _deleteImage() {
 
         ),
       ),
-    ),
-
   );
   }
 }
