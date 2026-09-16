@@ -6,7 +6,6 @@ import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../utils/date_utils.dart';
-import '../models/report.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Post post;
@@ -32,9 +31,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
-
-  late Future<List<Report>> _reportsFuture;
-  List<Report> _reports = [];
 
   Future<User> _loadUser() async {
     final user = await getUser();
@@ -104,7 +100,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       );
       Navigator.pop(context);
 
-    } on DioException catch (e) {
+    } on DioException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Une erreur est survenue, réessaie plus tard')));
     }

@@ -14,7 +14,7 @@ class UserProfileScreen extends StatefulWidget {
 
 
   final String? userId;
-  UserProfileScreen({super.key, this.userId});
+  const UserProfileScreen({super.key, this.userId});
 
 
   @override
@@ -122,7 +122,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
 
 
-  Future<User> _loadUser({String? id}) async {
+  Future<User> _loadUser() async {
     try {
       final token = await AuthService().getToken();
       final url = widget.userId != null ? '/users/${widget.userId}' : '/users/me';
@@ -139,7 +139,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
   }
 
 
-  Future<List<Post>> _loadPosts({String? id}) async {
+  Future<List<Post>> _loadPosts() async {
     try {
       final token = await AuthService().getToken();
       final url = widget.userId != null ? '/users/${widget.userId}/posts' : '/posts/me';

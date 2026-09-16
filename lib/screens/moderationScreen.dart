@@ -92,7 +92,7 @@ class _ModerationScreenState extends State<ModerationScreen> {
       });
 
 
-    } on DioException catch (e) {
+    } on DioException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Une erreur est survenue, réessaie plus tard')));
     }
