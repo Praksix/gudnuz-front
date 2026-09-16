@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gudnuz/services/auth_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../utils/date_utils.dart';
-
+import '../models/report.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Post post;
@@ -32,6 +33,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
 
+  late Future<List<Report>> _reportsFuture;
+  List<Report> _reports = [];
 
   Future<User> _loadUser() async {
     final user = await getUser();
@@ -60,9 +63,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       );
       return;
     }
-
-
-
 
     try {
       final token = await AuthService().getToken();
@@ -112,7 +112,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
 
 
-
+  Future<void> _openSource(String source) async {
+    final normalized = source.startsWith('http://') || source.startsWith('https://')
+        ? source
+        : 'https://$source';
+    final uri = Uri.parse(normalized);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
 
   Future<void> toggleSpark() async {
@@ -298,6 +306,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 // Source — affichée uniquement pour les posts ACTU et si elle existe
                 if (post.source != null)
                   Expanded(
+                    child:
+                    InkWell(
+                      onTap: () => _openSource(post.source!),
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 1),
@@ -320,6 +331,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ),
                     ),
+                    )
                   ),
 
                 const SizedBox(width: 10),
