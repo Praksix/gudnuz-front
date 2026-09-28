@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
+import '../widgets/flare_card.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
@@ -8,6 +9,7 @@ import 'dart:ui';
 import 'lockoutScreen.dart';
 import 'moderationScreen.dart';
 import 'topUsersScreen.dart';
+import 'gudBoxScreen.dart';
 
 
 class FeedScreen extends StatefulWidget {
@@ -45,6 +47,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   late Future<User> _userFuture;
 
+  // Flare actuel — null s'il n'y en a pas encore (dans ce cas on n'affiche rien)
+  Post? _flare;
+
 
 
   @override
@@ -52,6 +57,7 @@ class _FeedScreenState extends State<FeedScreen> {
     super.initState();
     _postsFuture = _loadPosts();
     _userFuture = _loadUser();
+    _loadFlare();
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
       final seuilDeDepart = 1200;
@@ -84,16 +90,25 @@ class _FeedScreenState extends State<FeedScreen> {
     return user;
   }
 
+  Future<void> _loadFlare() async {
+    final flare = await getCurrentFlare();
+    if (!mounted) return;
+    setState(() => _flare = flare);
+  }
+
   Future<void> _onRefresh() async {
     final cat = _categorie == "TOP" ? null : _categorie;
     final posts = await getPosts(categorie: cat);
     setState(() => _posts = posts);
+    await _loadFlare();
   }
 
   void _onSparkToggled(Post updatedPost) {
     setState(() {
       final index = _posts.indexWhere((p) => p.id == updatedPost.id);
       if (index != -1) _posts[index] = updatedPost;
+      // Le Flare apparaît aussi dans la liste : on garde les deux cartes synchronisées
+      if (_flare?.id == updatedPost.id) _flare = updatedPost;
     });
   }
 
@@ -120,6 +135,25 @@ class _FeedScreenState extends State<FeedScreen> {
 
     } on DioException catch (e) {
       throw Exception('Erreur réseau : ${e.message}');
+    }
+  }
+
+  Future<Post?> getCurrentFlare() async {
+    try {
+      final token = await AuthService().getToken();
+      final response = await _dio.get(
+        '/flare/current',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      // Pas de Flare élu → le back renvoie un 200 avec un corps vide (pas une Map)
+      if (response.data is! Map<String, dynamic>) return null;
+      return Post.fromJson(response.data);
+
+    } on DioException catch (e) {
+      // Le Flare est un bonus : en cas d'erreur, on affiche juste le feed normal
+      print('Erreur Flare : ${e.message}');
+      return null;
     }
   }
 
@@ -212,6 +246,14 @@ class _FeedScreenState extends State<FeedScreen> {
             Spacer(),
             Divider(color: Colors.grey, thickness: 1),
             ListTile(
+              leading: Icon(Icons.local_fire_department_outlined),
+              title: Text("GudBox", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const GudBoxScreen()));
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.emoji_events_outlined),
               title: Text("Hall of Fame", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               onTap: () {
@@ -253,9 +295,11 @@ class _FeedScreenState extends State<FeedScreen> {
           }
 
           // État 3 : les données sont là
-          final posts = snapshot.data!;
+          // Le Flare n'est affiché qu'en TOP, en premier élément de la liste (il défile avec le feed)
+          final showFlare = _categorie == "TOP" && _flare != null;
+          final offset = showFlare ? 1 : 0;
 
-          if (posts.isEmpty) {
+          if (_posts.isEmpty && !showFlare) {
             return const Center(child: Text('Aucun post pour le moment.'));
           }
 
@@ -268,9 +312,15 @@ class _FeedScreenState extends State<FeedScreen> {
             child: ListView.builder(
                 controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _posts.length,
+              itemCount: _posts.length + offset,
               itemBuilder: (context, index) {
 
+              if (showFlare && index == 0) {
+                return Opacity(
+                  opacity: _opacity,
+                  child: FlareCard(post: _flare!, onSparkToggled: _onSparkToggled, title: "🔥 Flare du moment"),
+                );
+              }
 
               return
 
@@ -278,7 +328,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     opacity: _opacity,
                     child:
                     PostCard(
-                post: _posts[index],
+                post: _posts[index - offset],
                 onSparkToggled: _onSparkToggled,
               ));
             },

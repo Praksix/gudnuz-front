@@ -4,6 +4,7 @@ import '../models/user.dart';
 import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../widgets/post_card.dart';
+import '../widgets/flare_card.dart';
 import 'package:gudnuz/theme/colors.dart';
 import '../services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -363,11 +364,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                             Text(user.pseudo, style: TextStyle(fontSize: 24,
                                                 height: 1.1,
                                                 fontWeight: FontWeight.w700)),
-                                            Text(user.userLevel,
-                                                style: TextStyle(fontSize: 17,
-                                                    height: 1.1,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white)),
+
                                             Row(
                                               children: [
                                                 Padding(
@@ -507,6 +504,13 @@ class _UserProfileScreen extends State<UserProfileScreen> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: _posts.length,
                                   itemBuilder: (context, index) {
+                                    // Les posts élus Flare gardent leur design animé sur le profil
+                                    if (_posts[index].isElected) {
+                                      return FlareCard(
+                                        post: _posts[index],
+                                        onSparkToggled: _onSparkToggled,
+                                      );
+                                    }
                                     return PostCard(
                                       post: _posts[index],
                                       onSparkToggled: _onSparkToggled,
