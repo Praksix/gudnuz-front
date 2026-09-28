@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import 'dart:ui';
 import 'lockoutScreen.dart';
 import 'moderationScreen.dart';
+import 'topUsersScreen.dart';
 
 
 class FeedScreen extends StatefulWidget {
@@ -209,6 +210,15 @@ class _FeedScreenState extends State<FeedScreen> {
               },
             ),
             Spacer(),
+            Divider(color: Colors.grey, thickness: 1),
+            ListTile(
+              leading: Icon(Icons.emoji_events_outlined),
+              title: Text("Hall of Fame", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const TopUsersScreen()));
+              },
+            ),
             Divider(color: Colors.grey, thickness: 1),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.red,),
