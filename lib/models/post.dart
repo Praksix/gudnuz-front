@@ -11,6 +11,7 @@ class Post {
   final String categorie;
   final int sparksCount;
   final bool isSparked;
+  final bool isElected; // post élu Flare au moins une fois
 
   Post({
     required this.id,
@@ -22,6 +23,7 @@ class Post {
     required this.titre,
     required this.createdAt,
     required this.isSparked,
+    this.isElected = false,
     this.imageUrl,
     this.avatarUrl,
     this.source,
@@ -37,6 +39,7 @@ class Post {
       categorie:   json['categorie']   as String,
       sparksCount: json['sparksCount'] as int,
       isSparked:   json['sparked']     as bool? ?? false,
+      isElected:   json['elected']     as bool? ?? false,
       source:      json['source']      as String?,
       imageUrl:    json['imageUrl']    as String?,
       avatarUrl:    json['avatarUrl']  as String?,
@@ -68,6 +71,7 @@ class Post {
       source:      source,
       sparksCount: sparksCount ?? this.sparksCount,
       isSparked:   isSparked  ?? this.isSparked,
+      isElected:   isElected,
     );
   }
 }
