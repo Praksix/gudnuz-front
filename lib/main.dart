@@ -9,9 +9,13 @@ import 'screens/connexionScreen.dart';
 import 'screens/inscriptionScreen.dart';
 import 'screens/lockoutScreen.dart';
 import 'package:gudnuz/services/auth_service.dart';
+import 'package:gudnuz/services/notification_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final isLoggedIn = await AuthService().isLoggedIn();
 
@@ -37,6 +41,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NotificationService.navigatorKey, // navigation depuis une notification
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Nohemi'),
       initialRoute: initialRoute, // utilise la valeur reçue
@@ -60,6 +65,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialisé ici (et pas dans main) : l'utilisateur est connecté (JWT dispo pour charger le post)
+    // et hors écran de pause — une notif ne contourne pas le verrouillage du scroll éthique
+    NotificationService().init();
+  }
 
   final List<Widget> _screens = [
     const FeedScreen(),
