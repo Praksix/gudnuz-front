@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/top_user.dart';
 import '../services/auth_service.dart';
 import 'userProfileScreen.dart';
+import '../utils/constants.dart';
 
 
 class TopUsersScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _TopUsersScreenState extends State<TopUsersScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
   late Future<List<TopUser>> _usersFuture;

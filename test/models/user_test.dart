@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gudnuz/models/user.dart';
+import 'package:gudnuz/utils/constants.dart';
 
 void main() {
   group('User.fromJson', () {
@@ -71,9 +72,9 @@ void main() {
       expect(user.displayAvatarUrl, isNull);
     });
 
-    test('préfixe une URL relative avec localhost:8080', () {
+    test('préfixe une URL relative avec serverUrl', () {
       final user = buildUser(avatarUrl: '/uploads/avatar1.jpg');
-      expect(user.displayAvatarUrl, 'http://localhost:8080/uploads/avatar1.jpg');
+      expect(user.displayAvatarUrl, '$serverUrl/uploads/avatar1.jpg');
     });
 
     test('ne modifie pas une URL déjà absolue', () {

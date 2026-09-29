@@ -1,3 +1,5 @@
+import '../utils/constants.dart';
+
 class User {
   final String pseudo;
   final String email;
@@ -45,7 +47,7 @@ class User {
 
   String? get displayAvatarUrl {
     if (avatarUrl == null) return null;
-    return avatarUrl!.startsWith('http') ? avatarUrl : 'http://localhost:8080$avatarUrl';
+    return avatarUrl!.startsWith('http') ? avatarUrl : '$serverUrl$avatarUrl';
   }
 
 }

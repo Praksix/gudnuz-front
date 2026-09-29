@@ -1,3 +1,5 @@
+import '../utils/constants.dart';
+
 class Post {
   final String id;
   final String userId;
@@ -49,12 +51,12 @@ class Post {
 
   String? get displayImageUrl {
     if (imageUrl == null) return null;
-    return imageUrl!.startsWith('http') ? imageUrl : 'http://localhost:8080$imageUrl';
+    return imageUrl!.startsWith('http') ? imageUrl : '$serverUrl$imageUrl';
   }
 
   String? get displayAvatarUrl {
     if (avatarUrl == null) return null;
-    return avatarUrl!.startsWith('http') ? avatarUrl : 'http://localhost:8080$avatarUrl';
+    return avatarUrl!.startsWith('http') ? avatarUrl : '$serverUrl$avatarUrl';
   }
 
   Post copyWith({bool? isSparked, int? sparksCount}) {

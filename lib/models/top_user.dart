@@ -1,3 +1,5 @@
+import '../utils/constants.dart';
+
 // Version allégée de User renvoyée par GET /users/top (classement public :
 // pas d'email ni de rôle, donc User.fromJson planterait sur ces champs requis).
 class TopUser {
@@ -24,6 +26,6 @@ class TopUser {
 
   String? get displayAvatarUrl {
     if (avatarUrl == null) return null;
-    return avatarUrl!.startsWith('http') ? avatarUrl : 'http://localhost:8080$avatarUrl';
+    return avatarUrl!.startsWith('http') ? avatarUrl : '$serverUrl$avatarUrl';
   }
 }

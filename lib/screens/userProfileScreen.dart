@@ -10,6 +10,7 @@ import '../services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'changePasswordScreen.dart';
+import '../utils/constants.dart';
 
 class UserProfileScreen extends StatefulWidget {
 
@@ -27,7 +28,7 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
   late Future<User> _userFuture;
@@ -235,7 +236,11 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
 
   Future<void> _pickImage() async {
-    final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1080, // redimensionne avant envoi (photos iPhone = plusieurs Mo)
+      imageQuality: 80,
+    );
     if (picked != null) {
       setState(() => _imageFile = File(picked.path));
       _updateAvatar();

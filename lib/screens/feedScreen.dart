@@ -10,6 +10,7 @@ import 'lockoutScreen.dart';
 import 'moderationScreen.dart';
 import 'topUsersScreen.dart';
 import 'gudBoxScreen.dart';
+import '../utils/constants.dart';
 
 
 class FeedScreen extends StatefulWidget {
@@ -39,7 +40,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
   late Future<List<Post>> _postsFuture;
@@ -318,7 +319,7 @@ class _FeedScreenState extends State<FeedScreen> {
               if (showFlare && index == 0) {
                 return Opacity(
                   opacity: _opacity,
-                  child: FlareCard(post: _flare!, onSparkToggled: _onSparkToggled, title: "🔥 Flare du moment"),
+                  child: FlareCard(post: _flare!, onSparkToggled: _onSparkToggled, title: "Dernier Flare"),
                 );
               }
 

@@ -4,6 +4,7 @@ import 'package:gudnuz/services/auth_service.dart';
 import 'package:gudnuz/theme/colors.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import '../utils/constants.dart';
 
 
 class CreateScreen extends StatefulWidget {
@@ -35,12 +36,16 @@ class _CreateScreenState extends State<CreateScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
 
 Future<void> _pickImage() async {
-  final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+  final picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1080, // redimensionne avant envoi (photos iPhone = plusieurs Mo)
+      imageQuality: 80,
+    );
   if (picked != null){
     setState(() =>  _imageFile = File(picked.path));
   }
@@ -325,7 +330,7 @@ void _deleteImage() {
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            hintText: "Ton pote Seb n'est pas une source",
+                            hintText: "Ton coloc n'est pas une source",
                             hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
                             border: InputBorder.none,
                           ),
