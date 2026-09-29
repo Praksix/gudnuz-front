@@ -15,7 +15,13 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Firebase n'est configuré que pour Android (firebase_options.dart) : sur iOS,
+  // l'init échoue et on continue sans notifications plutôt que de bloquer l'app
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    print('Firebase indisponible : $e');
+  }
 
   final isLoggedIn = await AuthService().isLoggedIn();
 
