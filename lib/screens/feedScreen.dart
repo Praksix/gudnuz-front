@@ -318,7 +318,7 @@ class _FeedScreenState extends State<FeedScreen> {
               if (showFlare && index == 0) {
                 return Opacity(
                   opacity: _opacity,
-                  child: FlareCard(post: _flare!, onSparkToggled: _onSparkToggled, title: "🔥 Flare du moment"),
+                  child: FlareCard(post: _flare!, onSparkToggled: _onSparkToggled, title: "Dernier Flare"),
                 );
               }
 

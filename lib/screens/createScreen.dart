@@ -325,7 +325,7 @@ void _deleteImage() {
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.0, color: Colors.black),
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            hintText: "Ton pote Seb n'est pas une source",
+                            hintText: "Ton coloc n'est pas une source",
                             hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.0, color: Colors.grey),
                             border: InputBorder.none,
                           ),
