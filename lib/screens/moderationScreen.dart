@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/report.dart';
 import '../services/auth_service.dart';
+import '../utils/constants.dart';
 
 
 class ModerationScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class _ModerationScreenState extends State<ModerationScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
   late Future<List<Report>> _reportsFuture;

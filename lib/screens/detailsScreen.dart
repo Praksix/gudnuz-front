@@ -6,6 +6,7 @@ import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../utils/date_utils.dart';
+import '../utils/constants.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Post post;
@@ -30,7 +31,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     _userFuture = _loadUser();
   }
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
 
   Future<User> _loadUser() async {
     final user = await getUser();

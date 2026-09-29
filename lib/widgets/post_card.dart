@@ -5,6 +5,7 @@ import '../models/post.dart';
 import 'package:dio/dio.dart';
 import '../services/auth_service.dart';
 import '../utils/date_utils.dart';
+import '../utils/constants.dart';
 
 
 class PostCard extends StatefulWidget {
@@ -35,7 +36,7 @@ class _PostCardState extends State<PostCard> {
     sparkCount = widget.post.sparksCount;
   }
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
 
   Future<void> toggleSpark() async {
     setState(() {

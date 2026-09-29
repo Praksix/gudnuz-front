@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/flare_card.dart';
 import '../models/post.dart';
 import '../services/auth_service.dart';
+import '../utils/constants.dart';
 
 
 class GudBoxScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _GudBoxScreenState extends State<GudBoxScreen> {
 
   // Le client HTTP — à déclarer une seule fois dans la classe
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8080/api', // émulateur Android
+    baseUrl: apiBaseUrl,
   ));
 
   late Future<List<Post>> _postsFuture;

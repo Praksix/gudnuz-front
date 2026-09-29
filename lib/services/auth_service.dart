@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/constants.dart';
 
 class AuthService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
   static const String _tokenKey = 'jwt_token';
 
   Future<void> register(String pseudo, String email, String password) async {
