@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "70958264923",
+    "project_id": "gudnuz-f603f",
+    "storage_bucket": "gudnuz-f603f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70958264923:android:b6d927cc0c743a8b21057e",
+        "android_client_info": {
+          "package_name": "ahok.gudnuz.gudbuz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFDFjigfiPaB-FWseU8IHwkn1uhY0A_b8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

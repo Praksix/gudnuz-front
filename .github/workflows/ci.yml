@@ -31,3 +31,39 @@ jobs:
 
       - name: Tests unitaires / widget
         run: flutter test
+
+  # Build de l'APK : seulement sur push (pas sur les PR), et seulement si les tests passent
+  build-apk:
+    needs: build-and-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v5
+
+      - name: Configuration Java (requis par Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configuration Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Récupération des dépendances
+        run: flutter pub get
+
+      # Pas de --dart-define : l'URL par défaut (constants.dart) pointe déjà sur le VPS
+      - name: Build APK release
+        run: flutter build apk --release
+
+      - name: Publication de l'APK en artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gudnuz-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
