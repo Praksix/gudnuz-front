@@ -3,9 +3,8 @@ import '../screens/detailsScreen.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import 'package:dio/dio.dart';
-import '../services/auth_service.dart';
 import '../utils/date_utils.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class PostCard extends StatefulWidget {
@@ -36,7 +35,6 @@ class _PostCardState extends State<PostCard> {
     sparkCount = widget.post.sparksCount;
   }
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
 
   Future<void> toggleSpark() async {
     setState(() {
@@ -45,11 +43,9 @@ class _PostCardState extends State<PostCard> {
     });
 
     try {
-      final token = await AuthService().getToken();
 
-      final response = await _dio.post(
+      final response = await ApiService.dio.post(
         '/posts/${widget.post.id}/spark',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       final newCount = response.data['sparksCount'] as int;
       setState(() => sparkCount = newCount);

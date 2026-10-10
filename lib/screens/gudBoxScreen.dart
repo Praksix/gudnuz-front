@@ -2,8 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../widgets/flare_card.dart';
 import '../models/post.dart';
-import '../services/auth_service.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class GudBoxScreen extends StatefulWidget {
@@ -16,10 +15,6 @@ class GudBoxScreen extends StatefulWidget {
 
 class _GudBoxScreenState extends State<GudBoxScreen> {
 
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
   late Future<List<Post>> _postsFuture;
   List<Post> _posts = [];
@@ -52,10 +47,8 @@ class _GudBoxScreenState extends State<GudBoxScreen> {
 
   Future<List<Post>> getGudBox() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/flare/gudbox',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       // response.data est une List de Maps

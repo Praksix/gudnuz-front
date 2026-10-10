@@ -3,8 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../screens/detailsScreen.dart';
-import '../utils/constants.dart';
-import 'auth_service.dart';
+import 'api_service.dart';
 
 class NotificationService {
   // Même nom de topic que NotificationService.FLARE_TOPIC côté back
@@ -17,7 +16,6 @@ class NotificationService {
   // Évite d'abonner les listeners deux fois (ex : logout puis login)
   static bool _initialized = false;
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
 
   Future<void> init() async {
     if (_initialized) return;
@@ -47,10 +45,8 @@ class NotificationService {
     if (postId == null) return;
 
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/posts/$postId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       final post = Post.fromJson(response.data);
       navigatorKey.currentState?.push(

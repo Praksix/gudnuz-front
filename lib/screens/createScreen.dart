@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:gudnuz/services/auth_service.dart';
 import 'package:gudnuz/theme/colors.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class CreateScreen extends StatefulWidget {
@@ -34,10 +33,6 @@ class _CreateScreenState extends State<CreateScreen> {
   File? _imageFile;
 
 
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
 
 Future<void> _pickImage() async {
@@ -58,7 +53,6 @@ void _deleteImage() {
   Future<void>  _createPost() async {
 
     try {
-      final token = await AuthService().getToken();
       final formData = FormData.fromMap({
         'titre': _titreController.text,
         'contenu': _contenuController.text,
@@ -72,11 +66,10 @@ void _deleteImage() {
         ),
       });
 
-      await _dio.post(
+      await ApiService.dio.post(
         '/posts',
         data: formData,
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
           contentType: 'multipart/form-data',
         ),
       );

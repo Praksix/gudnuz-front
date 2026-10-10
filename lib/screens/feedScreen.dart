@@ -10,7 +10,7 @@ import 'lockoutScreen.dart';
 import 'moderationScreen.dart';
 import 'topUsersScreen.dart';
 import 'gudBoxScreen.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class FeedScreen extends StatefulWidget {
@@ -38,10 +38,6 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
 
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
   late Future<List<Post>> _postsFuture;
   List<Post> _posts = [];
@@ -61,8 +57,8 @@ class _FeedScreenState extends State<FeedScreen> {
     _loadFlare();
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
-      final seuilDeDepart = 1200;
-      final seuilDeFin = 1700;
+      final seuilDeDepart = 1200*50;
+      final seuilDeFin = 1200*50+700;
       final t = ((offset - seuilDeDepart) / (seuilDeFin - seuilDeDepart)).clamp(0.0, 1.0);
       final opacity = lerpDouble(1.0, 0.0, t)!;
       setState(() => _opacity = opacity);
@@ -119,11 +115,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   Future<List<Post>> getPosts({String? categorie}) async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/posts',
         queryParameters: categorie != null ? {'categorie': categorie} : null,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       // response.data est une List de Maps
@@ -141,10 +135,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
   Future<Post?> getCurrentFlare() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/flare/current',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       // Pas de Flare élu → le back renvoie un 200 avec un corps vide (pas une Map)
@@ -160,10 +152,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
   Future<User> getUser() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/users/me',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return User.fromJson(response.data);

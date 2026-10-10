@@ -8,3 +8,7 @@ const String serverUrl = String.fromEnvironment(
 
 // Base des appels Dio (toutes les routes sont sous /api)
 const String apiBaseUrl = '$serverUrl/api';
+
+// Longueur minimale d'un mot de passe — doit rester alignée avec le @Size(min = 8)
+// de UpdateProfileRequest côté back
+const int minPasswordLength = 8;
