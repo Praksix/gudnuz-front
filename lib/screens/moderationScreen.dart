@@ -2,8 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/report.dart';
-import '../services/auth_service.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class ModerationScreen extends StatefulWidget {
@@ -22,10 +21,6 @@ class _ModerationScreenState extends State<ModerationScreen> {
   }
 
 
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
   late Future<List<Report>> _reportsFuture;
   List<Report> _reports = [];
@@ -54,10 +49,8 @@ class _ModerationScreenState extends State<ModerationScreen> {
 
   Future<List<Report>> getReports() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/moderation/reports',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       // response.data est une List de Maps
@@ -77,10 +70,8 @@ class _ModerationScreenState extends State<ModerationScreen> {
   Future<void> _ignoreReport(String reportId) async {
 
     try {
-      final token = await AuthService().getToken();
-      await _dio.delete(
+      await ApiService.dio.delete(
         '/moderation/reports/$reportId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (!mounted) return;

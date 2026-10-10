@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:gudnuz/services/auth_service.dart';
+import 'package:gudnuz/services/api_service.dart';
 import 'package:gudnuz/theme/colors.dart';
 import '../utils/constants.dart';
 
@@ -16,7 +16,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
   bool _isLoading = false;
 
   @override
@@ -35,20 +34,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
+    // Même règle que le @Size(min = 8) du back : on évite d'envoyer une requête vouée à l'échec.
+    // Le back garde sa validation (on peut appeler l'API sans passer par l'app).
+    if (_newPasswordController.text.length < minPasswordLength) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Le nouveau mot de passe doit faire au moins $minPasswordLength caractères')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
-      final token = await AuthService().getToken();
       final formData = FormData.fromMap({
         'currentPassword': _currentPasswordController.text,
         'newPassword': _newPasswordController.text,
       });
 
-      await _dio.patch(
+      await ApiService.dio.patch(
         '/users/me',
         data: formData,
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
           contentType: 'multipart/form-data',
         ),
       );
@@ -60,7 +66,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       Navigator.pop(context);
 
     } on DioException catch (e) {
-      final message = e.response?.statusCode == 401 || e.response?.statusCode == 403
+      final message = e.response?.statusCode == 400
           ? 'Mot de passe actuel incorrect'
           : 'Une erreur est survenue, réessaie plus tard';
       if (!mounted) return;

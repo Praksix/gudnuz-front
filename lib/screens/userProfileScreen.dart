@@ -10,7 +10,7 @@ import '../services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'changePasswordScreen.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 class UserProfileScreen extends StatefulWidget {
 
@@ -24,12 +24,6 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreen extends State<UserProfileScreen> {
-
-
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
   late Future<User> _userFuture;
   late Future<List<Post>> _postsFuture;
@@ -57,11 +51,9 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   Future<void> _deleteAccount() async {
     try {
-      final token = await AuthService().getToken();
-      await _dio.patch(
+      await ApiService.dio.patch(
         '/users/me/delete',
         data: {'currentPassword': _deletePasswordController.text},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       await AuthService().logout();
@@ -70,6 +62,14 @@ class _UserProfileScreen extends State<UserProfileScreen> {
       Navigator.pushNamedAndRemoveUntil(context, '/connexion', (route) => false);
 
     } on DioException catch (e) {
+      // 400 = mot de passe actuel incorrect → message dédié plutôt que l'erreur générique
+      if (e.response?.statusCode == 400) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mot de passe incorrect')),
+        );
+        return;
+      }
       _handleError(e);
     }
   }
@@ -126,11 +126,9 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   Future<User> _loadUser() async {
     try {
-      final token = await AuthService().getToken();
       final url = widget.userId != null ? '/users/${widget.userId}' : '/users/me';
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         url,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return User.fromJson(response.data);
@@ -143,11 +141,9 @@ class _UserProfileScreen extends State<UserProfileScreen> {
 
   Future<List<Post>> _loadPosts() async {
     try {
-      final token = await AuthService().getToken();
       final url = widget.userId != null ? '/users/${widget.userId}/posts' : '/posts/me';
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         url,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       final List<dynamic> data = response.data;
@@ -173,17 +169,15 @@ class _UserProfileScreen extends State<UserProfileScreen> {
   Future<void>  _updateBio() async {
 
     try {
-      final token = await AuthService().getToken();
+
       final formData = FormData.fromMap({
         'bio': _bioController.text,
-
       });
 
-      await _dio.patch(
+      await ApiService.dio.patch(
         '/users/me',
         data: formData,
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
           contentType: 'multipart/form-data',
         ),
       );
@@ -207,16 +201,14 @@ class _UserProfileScreen extends State<UserProfileScreen> {
   Future<void>  _updateAvatar() async {
 
     try {
-      final token = await AuthService().getToken();
       final formData = FormData.fromMap({
         'avatar': await MultipartFile.fromFile(_imageFile!.path, filename: 'image.jpg'),
       });
 
-      await _dio.patch(
+      await ApiService.dio.patch(
         '/users/me',
         data: formData,
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
           contentType: 'multipart/form-data',
         ),
       );

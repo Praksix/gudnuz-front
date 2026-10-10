@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../models/top_user.dart';
-import '../services/auth_service.dart';
 import 'userProfileScreen.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 
 class TopUsersScreen extends StatefulWidget {
@@ -16,10 +15,6 @@ class TopUsersScreen extends StatefulWidget {
 
 class _TopUsersScreenState extends State<TopUsersScreen> {
 
-  // Le client HTTP — à déclarer une seule fois dans la classe
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-  ));
 
   late Future<List<TopUser>> _usersFuture;
 
@@ -31,16 +26,18 @@ class _TopUsersScreenState extends State<TopUsersScreen> {
   }
 
   Future<void> _onRefresh() async {
-    setState(() => _usersFuture = getUsers());
+    // Accolades obligatoires : avec "=>", la closure renverrait la Future (valeur de
+    // l'affectation), et setState refuse une closure qui renvoie une Future
+    setState(() {
+      _usersFuture = getUsers();
+    });
     await _usersFuture;
   }
 
   Future<List<TopUser>> getUsers() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/users/top',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       // response.data est une List de Maps

@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:gudnuz/services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../screens/userProfileScreen.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../utils/date_utils.dart';
-import '../utils/constants.dart';
+import '../services/api_service.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Post post;
@@ -31,7 +30,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     _userFuture = _loadUser();
   }
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: apiBaseUrl));
 
   Future<User> _loadUser() async {
     final user = await getUser();
@@ -40,10 +38,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Future<User> getUser() async {
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.get(
+      final response = await ApiService.dio.get(
         '/users/me',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return User.fromJson(response.data);
@@ -62,11 +58,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
 
     try {
-      final token = await AuthService().getToken();
-      await _dio.post(
+      await ApiService.dio.post(
         '/posts/${widget.post.id}/report',
         data: {'motif': _motifController.text},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       _motifController.clear();
@@ -89,10 +83,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Future<void> _removePost() async {
 
     try {
-      final token = await AuthService().getToken();
-      await _dio.patch(
+      await ApiService.dio.patch(
         '/moderation/posts/${widget.post.id}/remove',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (!mounted) return;
@@ -127,10 +119,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
     });
 
     try {
-      final token = await AuthService().getToken();
-      final response = await _dio.post(
+      final response = await ApiService.dio.post(
         '/posts/${widget.post.id}/spark',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       setState(() => sparkCount = response.data['sparksCount'] as int);
     } on DioException catch (_) {
